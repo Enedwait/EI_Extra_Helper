@@ -1,16 +1,29 @@
 # =================================================================================================================================
-# EI EXTRA HELPER [ v1.1 ]
+# EI EXTRA HELPER [ v1.2 ]
 # =================================================================================================================================
 # Author: Oleg <Knight Rider> Tolmachev.
 # This python extension for Blender contains few useful functions for the ease of work with imported models from the Evil Islands game.
 # It allows:
-# 1) EI Copy Materials - assigns material from the base model to its morphs.
-# 2) EI Copy UVs - copies UVs from the base model to its morphs.
-# 3) EI Make Smooth - adds predefined subdivs for the easy smoothing.
-# 4) EI Prepare - prepares model for smoothing (converts tris to quads, adds subdiv and triangulate modifiers).
-# 5) EI Remove Multires - removes multires modifier from all.
-# Note: for all of those actions all collections should be enabled.
+# 1) EI Copy Materials ~ assigns material from the base model to its morphs.
+# 2) EI Copy UVs ~ copies UVs from the base model to its morphs.
+# 3) EI Make Smooth ~ adds predefined subdivs for the easy smoothing.
+# 4) EI Prepare ~ prepares model for smoothing (converts tris to quads, adds subdiv and triangulate modifiers).
+# 5) EI Remove Multires ~ removes multires modifier from all.
+
+# Note: for all of those actions above all collections should be enabled.
 # To find those functions use Blender search after adding the extension.
+
+# 6) EI HideAllCollectionsExceptBase ~ hides all the collections except base.
+# 7) EI UnhideAllCollections ~ unhides all the collections.
+
+# Function below should be applied to human resources only: 
+# 8) EI HideAllExceptHumanBody ~ hides all the objects except human body parts.
+# 8) EI HideAllExceptHumanBodyInBase ~ hides all the objects except human body parts in base collection.
+
+# 9) EI UnhideAll ~ unhides all the objects on scene.
+# 10) EI HideArmor ~ hides all the armor objects on scene.
+# 11) EI UnhideArmor ~ unhides all the armor objects on scene.
+
 # =================================================================================================================================
 
 import math
@@ -23,21 +36,160 @@ from bpy.utils import unregister_class
 bl_info = {
     'name': 'EI Extra Helper',
     'author': 'OKRT',
-    'version': (1, 1),
+    'version': (1, 2),
     'blender': (3, 0, 0),
     'location': '',
     'description': 'Evil Islands extra addon',
     'wiki_url': '',
     'tracker_url': '',
     'category': 'Object'}
+
+# =================================================================================================================================
+# HideAllCollectionsExceptBase
+
+def hide_collection(collection_name):    
+    if collection_name in bpy.context.view_layer.layer_collection.children:
+        collection = bpy.context.view_layer.layer_collection.children[collection_name]
+        collection.exclude = True          
+            
+def HideAllCollectionsExceptBase():
+    hide_collection("str")
+    hide_collection("dex")
+    hide_collection("unique")
+    hide_collection("base(scaled)")
+    hide_collection("str(scaled)")
+    hide_collection("dex(scaled)")
+    hide_collection("unique(scaled)")    
     
+class EIHideAllCollectionsExceptBase(bpy.types.Operator):
+    """    """
+    bl_idname = "object.ei_hide_all_collections_except_base"
+    bl_label = "EI Hide All Collections Except Base"
+    bl_description = "Hides all collections except base"
+    
+    def execute(self, context):
+        HideAllCollectionsExceptBase()
+        return {'FINISHED'} 
+ 
+# =================================================================================================================================
+# HideAllExceptHumanBody 
+    
+def UnhideAllCollections():
+    for collection in bpy.context.view_layer.layer_collection.children:
+        collection.exclude = False
+        
+class EIUnhideAllCollections(bpy.types.Operator):
+    """    """
+    bl_idname = "object.ei_unhide_all_collections"
+    bl_label = "EI Unhide All Collections"
+    bl_description = "Unhides all collections"
+    
+    def execute(self, context):
+        UnhideAllCollections()
+        return {'FINISHED'}   
+ 
+# =================================================================================================================================
+# HideAllExceptHumanBody
+      
+def HideAllExceptHumanBody():
+    except_names = [ "hp", "bd", "hd", "rh1", "rh2", "rh3", "lh1", "lh2", "lh3", "rl1", "rl2", "rl3", "ll1", "ll2", "ll3", "s~hp", "s~bd", "s~hd", "s~rh1", "s~rh2", "s~rh3", "s~lh1", "s~lh2", "s~lh3", "s~rl1", "s~rl2", "s~rl3", "s~ll1", "s~ll2", "s~ll3", "d~hp", "d~bd", "d~hd", "d~rh1", "d~rh2", "d~rh3", "d~lh1", "d~lh2", "d~lh3", "d~rl1", "d~rl2", "d~rl3", "d~ll1", "d~ll2", "d~ll3", "u~hp", "u~bd", "u~hd", "u~rh1", "u~rh2", "u~rh3", "u~lh1", "u~lh2", "u~lh3", "u~rl1", "u~rl2", "u~rl3", "u~ll1", "u~ll2", "u~ll3", "b~hp", "b~bd", "b~hd", "b~rh1", "b~rh2", "b~rh3", "b~lh1", "b~lh2", "b~lh3", "b~rl1", "b~rl2", "b~rl3", "b~ll1", "b~ll2", "b~ll3", "p~hp", "p~bd", "p~hd", "p~rh1", "p~rh2", "p~rh3", "p~lh1", "p~lh2", "p~lh3", "p~rl1", "p~rl2", "p~rl3", "p~ll1", "p~ll2", "p~ll3",
+    "g~hp", "g~bd", "g~hd", "g~rh1", "g~rh2", "g~rh3", "g~lh1", "g~lh2", "g~lh3", "g~rl1", "g~rl2", "g~rl3", "g~ll1", "g~ll2", "g~ll3", "c~hp", "c~bd", "c~hd", "c~rh1", "c~rh2", "c~rh3", "c~lh1", "c~lh2", "c~lh3", "c~rl1", "c~rl2", "c~rl3", "c~ll1", "c~ll2", "c~ll3" ] 
+    
+    for obj in bpy.context.scene.objects:
+        if obj.name not in except_names and not obj.name.startswith("hr") and not obj.name.startswith("s~hr") and not obj.name.startswith("d~hr") and not obj.name.startswith("u~hr") and not obj.name.startswith("b~hr") and not obj.name.startswith("p~hr") and not obj.name.startswith("g~hr") and not obj.name.startswith("c~hr"):
+            obj.hide_viewport = True
+            obj.hide_render = True
+            
+class EIHideAllExceptHumanBody(bpy.types.Operator):
+    """    """
+    bl_idname = "object.ei_hide_all_except_human_body"
+    bl_label = "EI Hide All Except Human Body"
+    bl_description = "Hides all the objects except human body"
+    
+    def execute(self, context):
+        HideAllExceptHumanBody()
+        return {'FINISHED'}            
+            
+def HideAllExceptHumanBodyInBase():
+    except_names = [ "hp", "bd", "hd", "rh1", "rh2", "rh3", "lh1", "lh2", "lh3", "rl1", "rl2", "rl3", "ll1", "ll2", "ll3" ] 
+    
+    for obj in bpy.context.scene.objects:
+        if obj.name not in except_names and not obj.name.startswith("hr"):
+            obj.hide_viewport = True
+            obj.hide_render = True
+
+class EIHideAllExceptHumanBodyInBase(bpy.types.Operator):
+    """    """
+    bl_idname = "object.ei_hide_all_except_human_body_in_base"
+    bl_label = "EI Hide All Except Human Body In Base"
+    bl_description = "Hides all the objects except human body in base collection"
+    
+    def execute(self, context):
+        HideAllExceptHumanBodyInBase()
+        return {'FINISHED'}
+
+# =================================================================================================================================
+# UnhideAll
+  
+def UnhideAll():  
+    for obj in bpy.context.scene.objects:
+        obj.hide_viewport = False
+        obj.hide_render = False  
+
+class EIUnhideAll(bpy.types.Operator):
+    """    """
+    bl_idname = "object.ei_unhide_all"
+    bl_label = "EI Unhide All"
+    bl_description = "Unhides all the objects"
+    
+    def execute(self, context):
+        UnhideAll()
+        return {'FINISHED'}
+        
+# =================================================================================================================================
+# HideArmor        
+        
+def HideArmor():
+    
+    for obj in bpy.data.objects:
+        if ".armor" in obj.name:
+            obj.hide_viewport = True  # Hide in viewport
+            obj.hide_render = True    # Hide in renders
+            
+class EIHideArmor(bpy.types.Operator):
+    """    """
+    bl_idname = "object.ei_hide_armor"
+    bl_label = "EI Hide Armor"
+    bl_description = "Hides all the armor objects"
+    
+    def execute(self, context):
+        HideArmor()
+        return {'FINISHED'}
+
+def UnhideArmor():
+    
+    for obj in bpy.data.objects:
+        if ".armor" in obj.name:
+            obj.hide_viewport = False  # Show in viewport
+            obj.hide_render = False    # Show in renders
+            
+class EIUnhideArmor(bpy.types.Operator):
+    """    """
+    bl_idname = "object.ei_unhide_armor"
+    bl_label = "EI Unhide Armor"
+    bl_description = "Unhides all the armor objects"
+    
+    def execute(self, context):
+        UnhideArmor()
+        return {'FINISHED'}
+        
 # =================================================================================================================================
 # Prepare
 
 # Prepares the model for smoothing. This includes:
-#   - converting tris to quads
-#   - adding multires
-#   - adding ttriangulation
+#   ~ converting tris to quads
+#   ~ adding multires
+#   ~ adding ttriangulation
 def PrepareModel():
     
     face_threshold = math.radians(40)
@@ -215,6 +367,13 @@ bl_operators = (
     EICopyMaterials,
     EIPrepare,
     EIRemoveMultires,
+    EIHideAllExceptHumanBody,
+    EIHideAllExceptHumanBodyInBase,
+    EIUnhideAll,
+    EIHideAllCollectionsExceptBase,
+    EIUnhideAllCollections,
+    EIHideArmor,
+    EIUnhideArmor
 )
 
 def menu_func1(self, context):
@@ -231,6 +390,28 @@ def menu_func4(self, context):
     
 def menu_func5(self, context):
     self.layout.operator(EIRemoveMultires.bl_idname, text=EIRemoveMultires.bl_label)
+    
+def menu_func6(self, context):
+    self.layout.operator(EIHideAllExceptHumanBody.bl_idname, text=EIHideAllExceptHumanBody.bl_label)
+    
+def menu_func7(self, context):
+    self.layout.operator(EIHideAllExceptHumanBodyInBase.bl_idname, text=EIHideAllExceptHumanBodyInBase.bl_label)    
+    
+def menu_func8(self, context):
+    self.layout.operator(EIUnhideAll.bl_idname, text=EIUnhideAll.bl_label)
+    
+def menu_func9(self, context):    
+    self.layout.operator(EIHideAllCollectionsExceptBase.bl_idname, text=EIHideAllCollectionsExceptBase.bl_label)   
+
+def menu_func10(self, context):
+    self.layout.operator(EIUnhideAllCollections.bl_idname, text=EIUnhideAllCollections.bl_label)  
+
+def menu_func11(self, context):    
+    self.layout.operator(EIHideArmor.bl_idname, text=EIHideArmor.bl_label)   
+
+def menu_func12(self, context):
+    self.layout.operator(EIUnhideArmor.bl_idname, text=EIUnhideArmor.bl_label)      
+    
 
 def register():  
     for operator in bl_operators:
@@ -242,6 +423,13 @@ def register():
     bpy.types.VIEW3D_MT_object.append(menu_func3)
     bpy.types.VIEW3D_MT_object.append(menu_func4)
     bpy.types.VIEW3D_MT_object.append(menu_func5)
+    bpy.types.VIEW3D_MT_object.append(menu_func6)
+    bpy.types.VIEW3D_MT_object.append(menu_func7)
+    bpy.types.VIEW3D_MT_object.append(menu_func8)
+    bpy.types.VIEW3D_MT_object.append(menu_func9)
+    bpy.types.VIEW3D_MT_object.append(menu_func10)
+    bpy.types.VIEW3D_MT_object.append(menu_func11)
+    bpy.types.VIEW3D_MT_object.append(menu_func12)
     
 def unregister():
     for operator in bl_operators:
